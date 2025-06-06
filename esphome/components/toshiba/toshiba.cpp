@@ -126,6 +126,13 @@ void ToshibaClimate::setup() {
   this->minimum_temperature_ = this->temperature_min_();
   this->maximum_temperature_ = this->temperature_max_();
   this->swing_modes_ = this->toshiba_swing_modes_();
+  // Set supported modes based on configuration
+  if (!this->supports_fan_only_mode_) {
+    // Remove fan only mode from supported modes if not supported
+    auto modes = this->supported_modes_;
+    modes.erase(climate::CLIMATE_MODE_FAN_ONLY);
+    this->supported_modes_ = modes;
+  }
   // Never send nan to HA
   if (std::isnan(this->target_temperature))
     this->target_temperature = 24;

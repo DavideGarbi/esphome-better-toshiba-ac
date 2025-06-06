@@ -29,6 +29,8 @@ class ToshibaClimate : public climate_ir::ClimateIR {
 
   void setup() override;
   void set_model(Model model) { this->model_ = model; }
+  void set_supports_swing_modes(bool supports_swing) { this->supports_swing_modes_ = supports_swing; }
+  void set_supports_fan_only_mode(bool supports_fan_only) { this->supports_fan_only_mode_ = supports_fan_only; }
 
  protected:
   void transmit_state() override;
@@ -50,14 +52,18 @@ class ToshibaClimate : public climate_ir::ClimateIR {
     return (this->model_ == MODEL_GENERIC) ? TOSHIBA_GENERIC_TEMP_C_MAX : TOSHIBA_RAC_PT1411HWRU_TEMP_C_MAX;
   }
   std::set<climate::ClimateSwingMode> toshiba_swing_modes_() {
-    return (this->model_ == MODEL_GENERIC)
-               ? std::set<climate::ClimateSwingMode>{}
-               : std::set<climate::ClimateSwingMode>{climate::CLIMATE_SWING_OFF, climate::CLIMATE_SWING_VERTICAL};
+    if (this->supports_swing_modes_) {
+      return std::set<climate::ClimateSwingMode>{climate::CLIMATE_SWING_OFF, climate::CLIMATE_SWING_VERTICAL};
+    } else {
+      return std::set<climate::ClimateSwingMode>{};
+    }
   }
   void encode_(remote_base::RemoteTransmitData *data, const uint8_t *message, uint8_t nbytes, uint8_t repeat);
   bool decode_(remote_base::RemoteReceiveData *data, uint8_t *message, uint8_t nbytes);
 
   Model model_;
+  bool supports_swing_modes_{false};
+  bool supports_fan_only_mode_{true};
 };
 
 }  // namespace toshiba
